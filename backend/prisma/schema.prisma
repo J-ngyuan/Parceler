@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RESIDENT
+  DRIVER
+  ADMIN
+}
+
+enum ParcelStatus {
+  PENDING
+  COLLECTED
+  EXPIRED
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  passwordHash   String
+  role           Role      @default(RESIDENT)
+  telegramChatId String?
+  linkCode       String?   @unique
+  createdAt      DateTime  @default(now())
+  parcels        Parcel[]  @relation("ResidentParcels")
+  deliveries     Parcel[]  @relation("DriverDeliveries")
+}
+
+model Parcel {
+  id             String       @id @default(cuid())
+  trackingNumber String
+  residentId     String
+  resident       User         @relation("ResidentParcels", fields: [residentId], references: [id])
+  driverId       String?
+  driver         User?        @relation("DriverDeliveries", fields: [driverId], references: [id])
+  deliveredAt    DateTime     @default(now())
+  expiresAt      DateTime
+  collectedAt    DateTime?
+  status         ParcelStatus @default(PENDING)
+  warningSent    Boolean      @default(false)
+  photoUrl       String?
+}

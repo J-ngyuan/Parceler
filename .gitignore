@@ -1,0 +1,32 @@
+# Environment variables (contains passwords - never commit this)
+backend/.env
+
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Uploaded parcel photos
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Prisma generated client
+backend/node_modules/.prisma/
+
+# Build output
+frontend/dist/
+
+# Claude memory files
+.claude/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+backend/check-env.mjs
+backend/seed-admin.mjs
