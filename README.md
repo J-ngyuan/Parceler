@@ -1,6 +1,6 @@
 # Parceler — College Parcel Management System
 
-A web-based parcel tracking system for college residential communities. Delivery drivers log incoming parcels, residents are notified instantly via email and Telegram, and a 2-week countdown timer enforces collection deadlines. Admins get a real-time dashboard to manage everything.
+A web-based parcel tracking system for college residential communities. Delivery drivers log incoming parcels, residents are notified instantly via email and Telegram, and a specified countdown timer enforces collection deadlines. Admins get a real-time dashboard to manage everything.
 
 ---
 
@@ -8,7 +8,7 @@ A web-based parcel tracking system for college residential communities. Delivery
 
 - Delivery drivers log parcels with tracking number and optional photo
 - Residents notified instantly via email and Telegram DM
-- 2-week countdown timer per parcel, with warning reminder at 2 days
+- Specified countdown timer per parcel, with warning reminder at 2 days
 - Real-time admin dashboard with live updates
 - Role-based access: Admin, Driver, Resident
 
