@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar.jsx';
 import CountdownTimer from '../components/CountdownTimer.jsx';
 import api from '../lib/api.js';
 
-const socket = io('http://localhost:3000');
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
 
 export default function AdminDashboard() {
   const qc = useQueryClient();
