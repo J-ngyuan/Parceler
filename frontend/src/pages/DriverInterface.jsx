@@ -1,6 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import Navbar from '../components/Navbar.jsx';
 import api from '../lib/api.js';
+
+function BarcodeScannerModal({ onScan, onClose }) {
+  useEffect(() => {
+    const scanner = new Html5QrcodeScanner(
+      'barcode-reader',
+      {
+        fps: 15,
+        qrbox: { width: 300, height: 150 },
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.QR_CODE,
+        ],
+      },
+      false
+    );
+    scanner.render(
+      (decodedText) => {
+        scanner.clear().then(() => onScan(decodedText)).catch(() => onScan(decodedText));
+      },
+      () => {}
+    );
+    return () => { scanner.clear().catch(() => {}); };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-6 w-full max-w-sm">
+        <h3 className="font-semibold text-gray-800 mb-1">Scan Parcel Barcode</h3>
+        <p className="text-sm text-gray-500 mb-4">Point your camera at the barcode on the parcel</p>
+        <div id="barcode-reader" />
+        <button
+          onClick={onClose}
+          className="mt-4 w-full border border-gray-300 text-gray-600 text-sm py-2 rounded hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function DriverInterface() {
   const [search, setSearch] = useState('');
@@ -12,6 +58,7 @@ export default function DriverInterface() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   async function handleSearch(e) {
     const value = e.target.value;
@@ -42,6 +89,11 @@ export default function DriverInterface() {
   function removePhoto() {
     setPhoto(null);
     setPreview(null);
+  }
+
+  function handleBarcodeScan(value) {
+    setTrackingNumber(value);
+    setScannerOpen(false);
   }
 
   async function handleSubmit(e) {
@@ -113,14 +165,31 @@ export default function DriverInterface() {
             )}
           </div>
 
-          {/* Tracking number */}
+          {/* Tracking number + scan button */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tracking / Parcel Number</label>
-            <input
-              type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)}
-              required placeholder="e.g. JD000123456789"
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)}
+                required placeholder="e.g. JD000123456789"
+                className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={() => setScannerOpen(true)}
+                className="shrink-0 bg-gray-100 border border-gray-300 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-200 flex items-center gap-1.5"
+                title="Scan barcode"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 9V6a1 1 0 011-1h3M3 15v3a1 1 0 001 1h3m11-4v3a1 1 0 01-1 1h-3m4-11h-3a1 1 0 00-1 1v3" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h1m2 0h1m2 0h1M7 12h1m2 0h1m2 0h1M7 16h1m2 0h1m2 0h1" />
+                </svg>
+                Scan
+              </button>
+            </div>
+            {trackingNumber && (
+              <p className="text-xs text-green-600 mt-1">Tracking number: {trackingNumber}</p>
+            )}
           </div>
 
           {/* Photo upload */}
@@ -129,7 +198,7 @@ export default function DriverInterface() {
               Parcel Photo <span className="text-gray-400 font-normal">(optional)</span>
             </label>
             {preview ? (
-              <div className="relative inline-block">
+              <div className="relative inline-block w-full">
                 <img src={preview} alt="Parcel preview" className="w-full max-h-48 object-cover rounded border border-gray-200" />
                 <button
                   type="button" onClick={removePhoto}
@@ -157,6 +226,13 @@ export default function DriverInterface() {
           </button>
         </form>
       </div>
+
+      {scannerOpen && (
+        <BarcodeScannerModal
+          onScan={handleBarcodeScan}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
     </div>
   );
 }

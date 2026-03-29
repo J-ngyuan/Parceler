@@ -19,30 +19,53 @@ enum ParcelStatus {
   EXPIRED
 }
 
+enum ExtensionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id             String    @id @default(cuid())
-  name           String
-  email          String    @unique
-  passwordHash   String
-  role           Role      @default(RESIDENT)
-  telegramChatId String?
-  linkCode       String?   @unique
-  createdAt      DateTime  @default(now())
-  parcels        Parcel[]  @relation("ResidentParcels")
-  deliveries     Parcel[]  @relation("DriverDeliveries")
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  passwordHash      String
+  role              Role               @default(RESIDENT)
+  telegramChatId    String?
+  linkCode          String?            @unique
+  createdAt         DateTime           @default(now())
+  parcels           Parcel[]           @relation("ResidentParcels")
+  deliveries        Parcel[]           @relation("DriverDeliveries")
+  extensionRequests ExtensionRequest[] @relation("ResidentExtensions")
 }
 
 model Parcel {
-  id             String       @id @default(cuid())
-  trackingNumber String
-  residentId     String
-  resident       User         @relation("ResidentParcels", fields: [residentId], references: [id])
-  driverId       String?
-  driver         User?        @relation("DriverDeliveries", fields: [driverId], references: [id])
-  deliveredAt    DateTime     @default(now())
-  expiresAt      DateTime
-  collectedAt    DateTime?
-  status         ParcelStatus @default(PENDING)
-  warningSent    Boolean      @default(false)
-  photoUrl       String?
+  id                String             @id @default(cuid())
+  trackingNumber    String
+  residentId        String
+  resident          User               @relation("ResidentParcels", fields: [residentId], references: [id])
+  driverId          String?
+  driver            User?              @relation("DriverDeliveries", fields: [driverId], references: [id])
+  deliveredAt       DateTime           @default(now())
+  expiresAt         DateTime
+  collectedAt       DateTime?
+  status            ParcelStatus       @default(PENDING)
+  warningSent       Boolean            @default(false)
+  photoUrl          String?
+  qrToken           String?            @unique
+  extensionRequests ExtensionRequest[]
+}
+
+model ExtensionRequest {
+  id            String                 @id @default(cuid())
+  parcelId      String
+  parcel        Parcel                 @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  residentId    String
+  resident      User                   @relation("ResidentExtensions", fields: [residentId], references: [id])
+  reason        String
+  requestedDays Int
+  status        ExtensionRequestStatus @default(PENDING)
+  createdAt     DateTime               @default(now())
+  reviewedAt    DateTime?
+  adminNote     String?
 }

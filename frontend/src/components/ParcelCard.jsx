@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import CountdownTimer from './CountdownTimer.jsx';
 
-export default function ParcelCard({ parcel, onCollect, showResident = false }) {
+export default function ParcelCard({ parcel, onScanQR, onRequestExtension, showResident = false }) {
   const [showPhoto, setShowPhoto] = useState(false);
+
+  const latestExtension = parcel.extensionRequests?.[0];
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -29,15 +31,34 @@ export default function ParcelCard({ parcel, onCollect, showResident = false }) 
               {showPhoto ? 'Hide photo' : 'View photo'}
             </button>
           )}
+          {latestExtension && parcel.status === 'PENDING' && (
+            <div className={`mt-2 text-xs px-2 py-1 rounded-full inline-block font-medium ${
+              latestExtension.status === 'PENDING'
+                ? 'bg-yellow-100 text-yellow-700'
+                : latestExtension.status === 'APPROVED'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            }`}>
+              Extension: {latestExtension.status === 'PENDING' ? 'Awaiting approval' : latestExtension.status === 'APPROVED' ? `Approved (+${latestExtension.requestedDays}d)` : 'Rejected'}
+            </div>
+          )}
         </div>
-        <div className="text-right shrink-0">
+        <div className="text-right shrink-0 space-y-2">
           <CountdownTimer expiresAt={parcel.expiresAt} status={parcel.status} />
-          {parcel.status === 'PENDING' && onCollect && (
+          {parcel.status === 'PENDING' && onScanQR && (
             <button
-              onClick={() => onCollect(parcel.id)}
-              className="mt-2 block text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+              onClick={() => onScanQR(parcel.id)}
+              className="block text-xs bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700 w-full"
             >
-              Mark Collected
+              Scan QR to Collect
+            </button>
+          )}
+          {parcel.status === 'PENDING' && onRequestExtension && !latestExtension?.status.match(/^(PENDING)$/) && (
+            <button
+              onClick={() => onRequestExtension(parcel)}
+              className="block text-xs bg-orange-500 text-white px-3 py-1.5 rounded hover:bg-orange-600 w-full"
+            >
+              Request Extension
             </button>
           )}
         </div>

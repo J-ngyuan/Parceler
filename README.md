@@ -98,7 +98,7 @@ cd backend
 node seed-admin.mjs
 ```
 
-This creates the default admin login:
+This creates the default admin login that can be changed:
 - **Email:** admin@gmail.com
 - **Password:** 1234
 
